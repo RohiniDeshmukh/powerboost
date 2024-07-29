@@ -24,6 +24,8 @@ export class Util {
         const template = document.createElement("template");
         template.innerHTML = htmlContent.trim();
         document.body.appendChild(template.content.firstChild);
+
+
       })
       .catch((error) => console.error("Error loading HTML content:", error));
 
@@ -37,6 +39,7 @@ export class Util {
         theme: "ace/theme/monokai",
         mode: "ace/mode/javascript",
       });
+   
     `;
 
     // Append the script to the body
