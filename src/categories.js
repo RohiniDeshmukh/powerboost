@@ -1,18 +1,23 @@
 
 export class Categories {
-    constructor(categories, examples) {
-        this.categories = categories;
-        this.examples = examples;
+    constructor() {
+        this.categories = [];
+        this.examples = new Map();
+        this.repoOwner = 'gaiborjosue';
+        this.repoName = 'boostlet';
+        this.folderPath = 'examples';
+        this.apiUrl = `https://api.github.com/repos/${this.repoOwner}/${this.repoName}/contents/${this.folderPath}?ref=webllm`;
         this.containerCategories = document.querySelector(".categories");
         this.spanCategories = document.querySelector(".spanCategories");
+      }
 
-    }
-
-    init() {
+    async init() {
+        const filesByCategory = await this.fetchBoostletFiles();
+        this.categories = Object.keys(filesByCategory);
+        this.examples = new Map(Object.entries(filesByCategory));
         this.createCategoryButtons();
         this.createExampleButtons();
         this.attachEventListeners();
-
     }
 
     createButton(text, className) {
@@ -117,7 +122,7 @@ export class Categories {
         const baseUrl = 'https://boostlet.org/examples/';
         const script = document.createElement('script');
         script.src = `${baseUrl}${buttonId}`;
-        // console.log(script.src);
+        console.log(script.src);
         document.head.appendChild(script);
     }
 
@@ -150,6 +155,38 @@ export class Categories {
 
         });
 
+    }
+
+    async fetchBoostletFiles() {
+        const baseurl = this.apiUrl;
+        const response = await fetch(baseurl);
+        const files = await response.json();
+
+        const filesByCategory = {};
+
+        await Promise.all(files.map(async (file) => {
+        if (file.type === "file" && file.name.endsWith(".js")) {
+            const fileName = file.name;
+            const fileNameEdit = fileName.substring(fileName.lastIndexOf('/') + 1, fileName.lastIndexOf('.'));
+            const category = await this.getCategoryFromFile(file.download_url);
+            if (!filesByCategory[category]) {
+            filesByCategory[category] = [];
+            }
+            filesByCategory[category].push(fileNameEdit);
+        }
+        }));
+
+        console.log(filesByCategory);
+
+        return filesByCategory;
+    }
+
+    async getCategoryFromFile(downloadUrl) {
+        const response = await fetch(downloadUrl);
+        const scriptText = await response.text();
+        const categoryRegex = /CATEGORY\s*=\s*["']([^"']+)["']/;
+        const match = categoryRegex.exec(scriptText);
+        return match ? match[1] : "Others";
     }
 
 
