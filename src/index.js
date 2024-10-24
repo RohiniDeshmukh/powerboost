@@ -15,7 +15,7 @@ window.Powerboost.load_html(() => {
 });
 
 
-setTimeout(function () {
+setTimeout(async function () {
 
     window.Powerboost.load_aceEditor();
 
@@ -31,8 +31,8 @@ setTimeout(function () {
 
     // Initialize the Categories class
     
-    const categories = new Categories(Boostlet.categories, Boostlet.examples);
-    categories.init();
+    const categories = new Categories();
+    await categories.init();
 
 
 
